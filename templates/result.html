@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fraud Prediction Result</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f6fc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 650px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin: 0;
+      color: #1a1a1a;
+    }
+    p.subtitle {
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .details {
+      display: flex;
+      justify-content: space-between;
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      font-size: 16px;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: #1e4ed8;
+    }
+  </style>
+</head>
+<body>
+  {% if results %}
+    <!-- Multiple results (Excel upload) -->
+    {% for row in results %}
+    <div class="card">
+      <h2>Analysis Complete</h2>
+      <p class="subtitle">Fraud detection results for claim {{ row.claim_id }}</p>
+
+      <div id="gauge{{ loop.index }}" style="width:100%; height:350px;"></div>
+
+      <div class="details">
+        <div><b>Claim ID:</b> {{ row.claim_id }}</div>
+        <div><b>Amount:</b> ${{ row.amount }}</div>
+        <div><b>Risk Score:</b> {{ row.probability }}%</div>
+        <div><b>Status:</b> 
+          {% if row.probability < 50 %}
+            <span style="color:green;">Safe</span>
+          {% elif row.probability < 75 %}
+            <span style="color:orange;">Risky</span>
+          {% else %}
+            <span style="color:red;">Fraud</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Centered button inside card -->
+      <a href="/" class="btn">New Check</a>
+    </div>
+    <script>
+      (function() {
+        const probability = Number({{ row.probability }});
+        const degrees = 180 - (probability * 1.8); 
+        const radians = degrees * Math.PI / 180;
+        const radius = 0.4;
+        const baseX = 0.5, baseY = 0.35;
+        const x = baseX + radius * Math.cos(radians);
+        const y = baseY + radius * Math.sin(radians);
+
+        let data = [{
+          type: "indicator",
+          mode: "gauge+number",
+          value: probability,
+          number: { suffix: "%", font: { size: 40, color: "black" } },
+          title: { text: (probability < 50 ? "Safe" : (probability < 75 ? "Risky" : "Fraud")),
+                   font: { size: 22, color: (probability < 50 ? "green" : (probability < 75 ? "orange" : "red")) } },
+          gauge: {
+            shape: "angular",
+            axis: { range: [0, 100], tickwidth: 1, tickcolor: "gray" },
+            bar: { color: "transparent" },
+            bgcolor: "white",
+            steps: [
+              { range: [0, 50], color: "green" },
+              { range: [50, 75], color: "orange" },
+              { range: [75, 100], color: "red" }
+            ]
+          }
+        }];
+
+        let layout = { 
+          margin: { t: 50, r: 30, l: 30, b: 0 },
+          paper_bgcolor: "white",
+          shapes: [
+            { type: "line", x0: baseX, y0: baseY, x1: x, y1: y, line: { color: "black", width: 4 } },
+            { type: "circle", xref: "paper", yref: "paper",
+              x0: baseX - 0.02, y0: baseY - 0.02, x1: baseX + 0.02, y1: baseY + 0.02,
+              fillcolor: "black", line: { color: "black" } }
+          ]
+        };
+
+        Plotly.newPlot('gauge{{ loop.index }}', data, layout, {
+          displaylogo: false,
+          modeBarButtonsToRemove: [
+            "zoom2d","pan2d","select2d","lasso2d",
+            "zoomIn2d","zoomOut2d","autoScale2d","resetScale2d",
+            "hoverClosestCartesian","hoverCompareCartesian",
+            "toggleSpikelines","resetViews"
+          ],
+          displayModeBar: true
+        });
+      })();
+    </script>
+    {% endfor %}
+  {% else %}
+    <!-- Single result (manual input) -->
+    <div class="card">
+      <h2>Analysis Complete</h2>
+      <p class="subtitle">Fraud detection results for claim {{ claim_id }}</p>
+
+      <div id="gauge" style="width:100%; height:350px;"></div>
+
+      <div class="details">
+        <div><b>Claim ID:</b> {{ claim_id }}</div>
+        <div><b>Amount:</b> ${{ amount }}</div>
+        <div><b>Risk Score:</b> {{ probability }}%</div>
+        <div><b>Status:</b> 
+          {% if probability < 50 %}
+            <span style="color:green;">Safe</span>
+          {% elif probability < 75 %}
+            <span style="color:orange;">Risky</span>
+          {% else %}
+            <span style="color:red;">Fraud</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Centered button inside card -->
+      <a href="/" class="btn">New Check</a>
+    </div>
+    <script>
+      const probability = Number({{ probability }});
+      const degrees = 180 - (probability * 1.8); 
+      const radians = degrees * Math.PI / 180;
+      const radius = 0.4;
+      const baseX = 0.5, baseY = 0.35;
+      const x = baseX + radius * Math.cos(radians);
+      const y = baseY + radius * Math.sin(radians);
+
+      let data = [{
+        type: "indicator",
+        mode: "gauge+number",
+        value: probability,
+        number: { suffix: "%", font: { size: 40, color: "black" } },
+        title: { text: (probability < 50 ? "Safe" : (probability < 75 ? "Risky" : "Fraud")),
+                 font: { size: 22, color: (probability < 50 ? "green" : (probability < 75 ? "orange" : "red")) } },
+        gauge: {
+          shape: "angular",
+          axis: { range: [0, 100], tickwidth: 1, tickcolor: "gray" },
+          bar: { color: "transparent" },
+          bgcolor: "white",
+          steps: [
+            { range: [0, 50], color: "green" },
+            { range: [50, 75], color: "orange" },
+            { range: [75, 100], color: "red" }
+          ]
+        }
+      }];
+
+      let layout = { 
+        margin: { t: 50, r: 30, l: 30, b: 0 },
+        paper_bgcolor: "white",
+        shapes: [
+          { type: "line", x0: baseX, y0: baseY, x1: x, y1: y, line: { color: "black", width: 4 } },
+          { type: "circle", xref: "paper", yref: "paper",
+            x0: baseX - 0.02, y0: baseY - 0.02, x1: baseX + 0.02, y1: baseY + 0.02,
+            fillcolor: "black", line: { color: "black" } }
+        ]
+      };
+
+      Plotly.newPlot('gauge', data, layout, {
+        displaylogo: false,
+        modeBarButtonsToRemove: [
+          "zoom2d","pan2d","select2d","lasso2d",
+          "zoomIn2d","zoomOut2d","autoScale2d","resetScale2d",
+          "hoverClosestCartesian","hoverCompareCartesian",
+          "toggleSpikelines","resetViews"
+        ],
+        displayModeBar: true
+      });
+    </script>
+  {% endif %}
+</body>
+</html>

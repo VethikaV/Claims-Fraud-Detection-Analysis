@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Prediction Form</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="form-page">
+  <div class="container">
+    <h2>Enter Claim Features</h2>
+    <p>Please fill all details for fraud prediction</p>
+
+    <!-- Manual feature form -->
+    <form id="manualForm" method="POST" action="/predict" class="form-grid">
+      {% for col in feature_columns %}
+        <div>
+          <label for="{{ col }}">{{ col }}</label>
+          <input type="number" step="any" name="{{ col }}" id="{{ col }}">
+        </div>
+      {% endfor %}
+      
+      <div class="form-actions">
+        <button type="submit">Predict</button>
+      </div>
+    </form>
+
+    <!-- OR Excel upload -->
+    <div class="upload-section" id="uploadSection">
+      <h3>OR Upload Excel File</h3>
+      <form id="excelForm" method="POST" action="{{ url_for('predict_excel') }}" enctype="multipart/form-data">
+        <input type="file" id="excelFile" name="file" accept=".xlsx,.xls">
+        <br>
+        <button type="submit">Upload & Predict</button>
+      </form>
+      <p><small>Excel must have exactly one row with the same feature columns in order.</small></p>
+    </div>
+  </div>
+
+  <script>
+    const manualInputs = document.querySelectorAll("#manualForm input[type='number']");
+    const excelFile = document.getElementById("excelFile");
+    const excelForm = document.getElementById("excelForm");
+    const manualForm = document.getElementById("manualForm");
+
+    // Disable Excel upload if manual inputs filled
+    manualInputs.forEach(input => {
+      input.addEventListener("input", () => {
+        let hasManual = Array.from(manualInputs).some(i => i.value.trim() !== "");
+        if (hasManual) {
+          excelFile.disabled = true;
+          excelForm.classList.add("disabled");
+        } else {
+          excelFile.disabled = false;
+          excelForm.classList.remove("disabled");
+        }
+      });
+    });
+
+    // Disable manual inputs if Excel file selected
+    excelFile.addEventListener("change", () => {
+      if (excelFile.files.length > 0) {
+        manualInputs.forEach(i => i.disabled = true);
+        manualForm.classList.add("disabled");
+      } else {
+        manualInputs.forEach(i => i.disabled = false);
+        manualForm.classList.remove("disabled");
+      }
+    });
+  </script>
+</body>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div style="margin: 20px;">
+      {% for category, message in messages %}
+        <div style="
+          padding: 10px;
+          margin-bottom: 10px;
+          border-radius: 6px;
+          color: white;
+          background: {% if category == 'danger' %}#e74c3c{% elif category == 'warning' %}#f39c12{% else %}#2ecc71{% endif %};
+        ">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+</html>

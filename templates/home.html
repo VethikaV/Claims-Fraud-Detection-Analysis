@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - Claim Fraud Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="home-page">
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Detect <span>Fraudulent Claims</span> with AI</h1>
+      <p>
+        Our system analyzes healthcare claims and identifies potential fraudulent provider in real-time.  
+        Fast and reliable fraud detection for your organization.
+      </p>
+      <div class="buttons">
+        <a href="{{ url_for('form') }}" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="{{ url_for('static', filename='fraud-detection.jpeg') }}" alt="Fraud Detection Illustration">
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about">
+    <h2>About the Problem</h2>
+    <p>
+      Provider fraud is one of the biggest problems being faced by the Medicare program.  
+      According to the government, total Medicare spending has increased exponentially due to fraud in claims.  
+      Healthcare fraud is an organized crime involving providers, physicians, and beneficiaries acting together to make fraudulent claims.
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    © 2025 Claim Fraud Detection System. All Rights Reserved.
+  </footer>
+</body>
+</html>
